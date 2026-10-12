@@ -1,0 +1,7 @@
+stage,device,images,batch_size,seconds,examples_per_sec,loss,accuracy,peak_bytes,max_abs_diff,detail
+train_epoch,cuda,16000,128,4.935438,3241.86,1.841982,,154796544,,first_loss=2.300248; epochs=1
+eval,cuda,2000,128,,,1.778069,0.345000,,,"one epoch is a pipeline check, not a competitive CIFAR-10 score"
+compile_check,cuda,,128,,,,,,0.00000143,ok
+fp32_step,cuda,,128,0.007207,,,,,,
+amp_step,cuda,,128,0.286100,,,,,,
+profile,cuda,,,,,,,,,results/profiler.txt

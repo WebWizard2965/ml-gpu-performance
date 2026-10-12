@@ -1,0 +1,15 @@
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                                                   Name    Self CPU %      Self CPU   CPU total %     CPU total  CPU time avg     Self CUDA   Self CUDA %    CUDA total  CUDA time avg    # of Calls  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+                             aten::convolution_backward         1.17%     248.285us         2.54%     537.561us     179.187us       7.116ms        40.25%       7.454ms       2.485ms             3  
+                                aten::cudnn_convolution         1.52%     320.769us        12.55%       2.655ms     885.076us       5.449ms        30.82%       6.060ms       2.020ms             3  
+void convolve_common_engine_float_NHWC<float, float,...         0.00%       0.000us         0.00%       0.000us       0.000us       2.272ms        12.85%       2.272ms       2.272ms             1  
+void wgrad_alg0_engine_NHWC<float, 512, 6, 5, 3, 3, ...         0.00%       0.000us         0.00%       0.000us       0.000us       2.028ms        11.47%       2.028ms       2.028ms             1  
+void cudnn::detail::dgrad_engine<float, 128, 6, 8, 3...         0.00%       0.000us         0.00%       0.000us       0.000us       1.571ms         8.89%       1.571ms       1.571ms             1  
+                 aten::max_pool2d_with_indices_backward         0.25%      53.357us         0.49%     103.935us      51.967us       1.560ms         8.82%       1.773ms     886.445us             2  
+void at::native::(anonymous namespace)::max_pool_bac...         0.00%       0.000us         0.00%       0.000us       0.000us       1.560ms         8.82%       1.560ms     780.096us             2  
+void cudnn::detail::dgrad_engine<float, 512, 6, 5, 3...         0.00%       0.000us         0.00%       0.000us       0.000us       1.526ms         8.63%       1.526ms       1.526ms             1  
+-------------------------------------------------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  ------------  
+Self CPU time total: 21.154ms
+Self CUDA time total: 17.680ms
+

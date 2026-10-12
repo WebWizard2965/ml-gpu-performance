@@ -20,6 +20,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
+from tqdm.auto import tqdm
 
 
 def make_blobs(n: int, k: int, d: int, seed: int, scale: float = 0.8, separation: float = 6.0):
@@ -121,32 +122,43 @@ def main() -> None:
     if torch.cuda.is_available():
         devices.append(torch.device("cuda"))
 
+    configs = [
+        (n, k, method, device)
+        for n in parse_ints(args.sizes)
+        for k in parse_ints(args.clusters)
+        for method in args.methods.split(",")
+        for device in devices
+    ]
+    for _, _, method, _ in configs:
+        if method not in {"identity", "broadcast"}:
+            raise SystemExit(f"unknown method {method}")
+
     rows = []
-    for n in parse_ints(args.sizes):
-        for k in parse_ints(args.clusters):
-            points, init = make_blobs(n, k, args.dims, args.seed)
-            for method in args.methods.split(","):
-                if method not in {"identity", "broadcast"}:
-                    raise SystemExit(f"unknown method {method}")
-                for device in devices:
-                    seconds, inertia, peak = run_config(points, init, args.iters, args.repeats, method, device)
-                    rows.append({
-                        "method": method,
-                        "device": device.type,
-                        "size": n,
-                        "clusters": k,
-                        "dims": args.dims,
-                        "iters": args.iters,
-                        "repeats": args.repeats,
-                        "median_seconds": f"{seconds:.6f}",
-                        "inertia": f"{inertia:.6f}",
-                        "intermediate_bytes": theoretical_bytes(n, k, args.dims, method),
-                        "cuda_peak_bytes": "" if peak is None else peak,
-                    })
-                    print(
-                        f"{device.type:4} {method:9} n={n:<7} k={k:<3} "
-                        f"median={seconds:.4f}s inertia={inertia:.2f}"
-                    )
+    progress = tqdm(configs, desc="K-means configurations", unit="config")
+    cached_data = {}
+    for n, k, method, device in progress:
+        progress.set_postfix_str(f"{device.type} {method} n={n} k={k}", refresh=True)
+        if (n, k) not in cached_data:
+            cached_data[(n, k)] = make_blobs(n, k, args.dims, args.seed)
+        points, init = cached_data[(n, k)]
+        seconds, inertia, peak = run_config(points, init, args.iters, args.repeats, method, device)
+        rows.append({
+            "method": method,
+            "device": device.type,
+            "size": n,
+            "clusters": k,
+            "dims": args.dims,
+            "iters": args.iters,
+            "repeats": args.repeats,
+            "median_seconds": f"{seconds:.6f}",
+            "inertia": f"{inertia:.6f}",
+            "intermediate_bytes": theoretical_bytes(n, k, args.dims, method),
+            "cuda_peak_bytes": "" if peak is None else peak,
+        })
+        tqdm.write(
+            f"{device.type:4} {method:9} n={n:<7} k={k:<3} "
+            f"median={seconds:.4f}s inertia={inertia:.2f}"
+        )
 
     output = Path(args.output)
     output.parent.mkdir(parents=True, exist_ok=True)
